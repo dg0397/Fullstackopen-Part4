@@ -2,8 +2,8 @@ POST http://localhost:3003/api/blogs
 Content-Type: application/json
 
 {
-    "title": "Learning Node.js",
+    "title": "Learning GraphQL",
     "author": "dg0397",
     "url": "localhost@mail.com",
-    "likes": 10
+    "likes": 20
 }
