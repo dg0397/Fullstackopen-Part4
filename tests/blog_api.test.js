@@ -8,7 +8,7 @@ const Blog = require("../models/blog")
 const api = supertest(app)
 
 
-beforeAll(async () => {
+beforeEach(async () => {
     await Blog.deleteMany({})
 
     const blogObjects = helper.initialBlogs.map(blog => new Blog(blog));
@@ -27,6 +27,12 @@ test('blogs are returned as JSON', async () => {
 
 
     expect(blogsReturned).toHaveLength(helper.initialBlogs.length)
+})
+
+test('the unique identifier property of the blog posts is named id', async () => {
+    const blogsReturned = await helper.blogsInDb()
+    const blogToView = blogsReturned[0];
+    expect(blogToView.id).toBeDefined()
 })
 
 afterAll(() => {
