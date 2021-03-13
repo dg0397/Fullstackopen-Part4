@@ -52,8 +52,27 @@ test('a valid blog can be added', async () => {
     const blogsAtEnd = await helper.blogsInDb()
     expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1)
 
-    const contents = blogsAtEnd.map(blog => blog.title)
-    expect(contents).toContain('The Next Mission')
+    const titles = blogsAtEnd.map(blog => blog.title)
+    expect(titles).toContain('The Next Mission')
+})
+
+test('likes property will be 0 by default', async () => {
+    const newBlog = {
+        title:'The Next Mission',
+        author:"Brendan Eich",
+        url:'https://brendaneich.com/2014/04/the-next-mission/'
+    }
+    
+    await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(201)
+        .expect('Content-Type',/application\/json/)
+
+        const blogsAtEnd = await helper.blogsInDb()
+        const [lastBlog] = blogsAtEnd.slice(-1);
+
+        expect(lastBlog.likes).toBe(0)
 })
 
 afterAll(() => {
