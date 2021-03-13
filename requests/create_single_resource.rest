@@ -4,5 +4,6 @@ Content-Type: application/json
 {
     "title": "Learning GraphQL",
     "author": "dg0397",
-    "url": "localhost@mail.com"
+    "url": "localhost@mail.com",
+    "likes": 25
 }

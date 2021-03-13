@@ -75,6 +75,41 @@ test('likes property will be 0 by default', async () => {
         expect(lastBlog.likes).toBe(0)
 })
 
+test('if title and/or url are missing backend responds with the status code 400 Bad Request.', async () => {
+    const newBlogWithoutTitle = {
+        author:"Brendan Eich",
+        url:'https://brendaneich.com/2014/04/the-next-mission/',
+        likes:15,
+    }
+    const newBlogWithoutUrl = {
+        title:'The Next Mission',
+        author:"Brendan Eich",
+        likes:15,
+    }
+    const newBlogWithoutTitleAndUrl = {
+        author:"Brendan Eich",
+        likes:15,
+    }
+    //testing a blog wihtout title
+    await api
+        .post('/api/blogs')
+        .send(newBlogWithoutTitle)
+        .expect(400)
+        .expect('Content-Type',/application\/json/)
+    //testing a blog wihtout url
+    await api
+        .post('/api/blogs')
+        .send(newBlogWithoutUrl)
+        .expect(400)
+        .expect('Content-Type',/application\/json/)
+    //testing a blog wihtout title and url
+    await api
+        .post('/api/blogs')
+        .send(newBlogWithoutTitleAndUrl)
+        .expect(400)
+        .expect('Content-Type',/application\/json/)
+})
+
 afterAll(() => {
     mongoose.connection.close()
 })
