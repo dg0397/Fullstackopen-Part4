@@ -35,6 +35,27 @@ test('the unique identifier property of the blog posts is named id', async () =>
     expect(blogToView.id).toBeDefined()
 })
 
+test('a valid blog can be added', async () => {
+    const newBlog = {
+        title:'The Next Mission',
+        author:"Brendan Eich",
+        url:'https://brendaneich.com/2014/04/the-next-mission/',
+        likes:15,
+    }
+    
+    await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(201)
+        .expect('Content-Type',/application\/json/)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1)
+
+    const contents = blogsAtEnd.map(blog => blog.title)
+    expect(contents).toContain('The Next Mission')
+})
+
 afterAll(() => {
     mongoose.connection.close()
 })
