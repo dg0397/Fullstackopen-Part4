@@ -151,6 +151,7 @@ describe('deletion of a blog', () => {
     const titles = blogsAtEnd.map(blog => blog.title)
     expect(titles).not.toContain(blogToDelete.title)
   })
+
   test('fails with statuscode 404 if blog does not exist', async () => {
     const validNonexistingId = await helper.nonExistingId()
 
@@ -160,12 +161,98 @@ describe('deletion of a blog', () => {
       .delete(`/api/blogs/${validNonexistingId}`)
       .expect(404)
   })
+
   test('fails with statuscode 400 malformatted id', async () => {
     const invalidId = 'a123pi9'
 
     await api
       .delete(`/api/blogs/${invalidId}`)
       .expect(400)
+  })
+})
+
+describe('viewing a specific blog', () => {
+  test('succeeds with a valid id', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToView = blogsAtStart[0]
+
+    const returnedBlog = await api.get(`/api/blogs/${blogToView.id}`)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const processedBlogToView = JSON.parse(JSON.stringify(blogToView))
+
+    expect(returnedBlog.body).toEqual(processedBlogToView)
+  })
+
+  test('fails with statuscode 400 malformatted id', async () => {
+    const invalidId = 'a123pi9'
+
+    await api
+      .get(`/api/blogs/${invalidId}`)
+      .expect(400)
+  })
+
+  test('fails with statuscode 404 if blog does not exist', async () => {
+    const validNonexistingId = await helper.nonExistingId()
+
+    console.log(validNonexistingId)
+
+    await api
+      .get(`/api/blogs/${validNonexistingId}`)
+      .expect(404)
+  })
+})
+
+describe('updating the information of an individual blog post', () => {
+  test('succeeds with a valid id and data', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToUpdate = blogsAtStart[0]
+
+    const updatedBlog = { ...blogToUpdate, likes: 678 }
+
+    const returnedBlog = await api.put(`/api/blogs/${updatedBlog.id}`)
+      .send(updatedBlog)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const processedBlogToUpdate = JSON.parse(JSON.stringify(updatedBlog))
+
+    expect(returnedBlog.body).toEqual(processedBlogToUpdate)
+  })
+  test('fails with statuscode 400 malformatted id', async () => {
+    const invalidId = 'a123pi9'
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToUpdate = blogsAtStart[0]
+
+    const updatedBlog = { ...blogToUpdate, likes: 678 }
+
+    await api.put(`/api/blogs/${invalidId}`)
+      .send(updatedBlog)
+      .expect(400)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    const blogToViewAtEnd = blogsAtEnd[0]
+
+    expect(blogToViewAtEnd).toEqual(blogToUpdate)
+  })
+
+  test('fails with statuscode 404 if blog does not exist', async () => {
+    const validNonexistingId = await helper.nonExistingId()
+    console.log(validNonexistingId)
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToUpdate = blogsAtStart[0]
+
+    const updatedBlog = { ...blogToUpdate, likes: 678 }
+
+    await api.put(`/api/blogs/${validNonexistingId}`)
+      .send(updatedBlog)
+      .expect(404)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    const blogToViewAtEnd = blogsAtEnd[0]
+
+    expect(blogToViewAtEnd).toEqual(blogToUpdate)
   })
 })
 
