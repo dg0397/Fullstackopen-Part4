@@ -5,13 +5,21 @@ const User = require('../models/user')
 usersRouter.post('/', async (request, response) => {
   const body = request.body
 
+  if (!body.password) {
+    return response.status(400).json({
+      error: 'User validation failed: password: Path `password` is required.'
+    })
+  } else if (body.password.length < 3) {
+    return response.status(400).json({ error: 'invalid sintax, password must be at least 3 characters long' })
+  }
+
   const saltRounds = 10
   const passwordHash = await bcrypt.hash(body.password, saltRounds)
 
   const user = new User({
     username: body.username,
     name: body.name,
-    passwordHash,
+    passwordHash
   })
 
   const savedUser = await user.save()
