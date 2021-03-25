@@ -1,6 +1,6 @@
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
-Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3RNYXN0ZXIiLCJpZCI6IjYwNWI3ZTg1MTdkMmI4MzQ1MDU5MzViYiIsImlhdCI6MTYxNjY5NDA1NH0.Rf3gDZcn9nVceEFdeNxl0QkYXNx0Rme-mFUFNroCvxQ
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3RNYXN0ZXIiLCJpZCI6IjYwNWI3ZTg1MTdkMmI4MzQ1MDU5MzViYiIsImlhdCI6MTYxNjcxMTczNiwiZXhwIjoxNjE2NzE1MzM2fQ.CGXYEEK1eDjzm9rF7mUhLYxFSOzQSJxllqY8gztSIEk
 
 {
     "title": "Learning React-TypeScript",
