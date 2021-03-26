@@ -15,8 +15,6 @@ const favoriteBlog = (blogs) => {
   if (blogMostLiked) {
     const { title, author, likes } = blogMostLiked
     return { title, author, likes }
-  } else {
-
   }
 }
 
@@ -44,8 +42,6 @@ const mostBlogs = (blogs) => {
   )
   if (authorWithMostBlogs) {
     return authorWithMostBlogs
-  } else {
-
   }
 }
 
@@ -73,8 +69,6 @@ const mostLikes = (blogs) => {
   )
   if (authorWithMostLikes) {
     return authorWithMostLikes
-  } else {
-
   }
 }
 

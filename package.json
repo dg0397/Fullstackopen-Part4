@@ -6,7 +6,8 @@
   "scripts": {
     "start": "cross-env NODE_ENV=production node index.js",
     "test": "cross-env NODE_ENV=test jest --verbose --runInBand --detectOpenHandles",
-    "dev": "cross-env NODE_ENV=development nodemon index.js"
+    "dev": "cross-env NODE_ENV=development nodemon index.js",
+    "lint": "npx standard --fix"
   },
   "keywords": [],
   "author": "dg0397",
@@ -30,6 +31,9 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testTimeout": 35000
+    "testTimeout": 60000
+  },
+  "standard": {
+    "env": [ "jest" ]
   }
 }

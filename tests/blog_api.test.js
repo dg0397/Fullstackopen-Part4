@@ -4,12 +4,25 @@ const mongoose = require('mongoose')
 const helper = require('./test_helper')
 
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 const api = supertest(app)
 
 beforeEach(async () => {
   await Blog.deleteMany({})
-  await Blog.insertMany(helper.initialBlogs)
+  await User.deleteMany({})
+
+  await api
+    .post('/api/users')
+    .send(helper.initalUsers[0])
+
+  const { body: userLogged } = await api
+    .post('/api/login')
+    .send({ username: helper.initalUsers[0].username, password: helper.initalUsers[0].password })
+
+  for (const blog of helper.initialBlogs) {
+    await api.post('/api/blogs').set('Authorization', `bearer ${userLogged.token}`).send(blog)
+  }
 })
 
 describe('when there is initially some blogs saved', () => {
@@ -53,8 +66,13 @@ describe('addition of a new blog', () => {
       likes: 15
     }
 
+    const { body: userLogged } = await api
+      .post('/api/login')
+      .send({ username: helper.initalUsers[0].username, password: helper.initalUsers[0].password })
+
     await api
       .post('/api/blogs')
+      .set('Authorization', `bearer ${userLogged.token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -73,8 +91,13 @@ describe('addition of a new blog', () => {
       url: 'https://brendaneich.com/2014/04/the-next-mission/'
     }
 
+    const { body: userLogged } = await api
+      .post('/api/login')
+      .send({ username: helper.initalUsers[0].username, password: helper.initalUsers[0].password })
+
     await api
       .post('/api/blogs')
+      .set('Authorization', `bearer ${userLogged.token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -93,11 +116,18 @@ describe('addition of a new blog', () => {
         likes: 15
       }
 
-      await api
+      const { body: userLogged } = await api
+        .post('/api/login')
+        .send({ username: helper.initalUsers[0].username, password: helper.initalUsers[0].password })
+
+      const result = await api
         .post('/api/blogs')
+        .set('Authorization', `bearer ${userLogged.token}`)
         .send(newBlogWithoutTitle)
         .expect(400)
         .expect('Content-Type', /application\/json/)
+
+      expect(result.body.error).toContain('`title` is required')
 
       const blogsAtEnd = await helper.blogsInDb()
       expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
@@ -109,11 +139,19 @@ describe('addition of a new blog', () => {
         author: 'Brendan Eich',
         likes: 15
       }
-      await api
+
+      const { body: userLogged } = await api
+        .post('/api/login')
+        .send({ username: helper.initalUsers[0].username, password: helper.initalUsers[0].password })
+
+      const result = await api
         .post('/api/blogs')
+        .set('Authorization', `bearer ${userLogged.token}`)
         .send(newBlogWithoutUrl)
         .expect(400)
         .expect('Content-Type', /application\/json/)
+
+      expect(result.body.error).toContain('`url` is required')
 
       const blogsAtEnd = await helper.blogsInDb()
       expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
@@ -124,14 +162,74 @@ describe('addition of a new blog', () => {
         author: 'Brendan Eich',
         likes: 15
       }
-      await api
+
+      const { body: userLogged } = await api
+        .post('/api/login')
+        .send({ username: helper.initalUsers[0].username, password: helper.initalUsers[0].password })
+
+      const result = await api
         .post('/api/blogs')
+        .set('Authorization', `bearer ${userLogged.token}`)
         .send(newBlogWithoutTitleAndUrl)
         .expect(400)
         .expect('Content-Type', /application\/json/)
 
+      expect(result.body.error).toContain('url: Path `url` is required., title: Path `title` is required.')
       const blogsAtEnd = await helper.blogsInDb()
       expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+    })
+  })
+  describe('fails if token missing or invalid', () => {
+    test('missing token', async () => {
+      const newBlog = {
+        title: 'The Next Mission',
+        author: 'Brendan Eich',
+        url: 'https://brendaneich.com/2014/04/the-next-mission/',
+        likes: 15
+      }
+
+      const result = await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(401)
+        .expect('Content-Type', /application\/json/)
+
+      expect(result.body.error).toContain('token missing - Unauthorized')
+
+      const blogsAtEnd = await helper.blogsInDb()
+      expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+
+      const titles = blogsAtEnd.map(blog => blog.title)
+      expect(titles).not.toContain('The Next Mission')
+    })
+    test('invalid token', async () => {
+      const newBlog = {
+        title: 'The Next Mission',
+        author: 'Brendan Eich',
+        url: 'https://brendaneich.com/2014/04/the-next-mission/',
+        likes: 15
+      }
+
+      const { body: userLogged } = await api
+        .post('/api/login')
+        .send({ username: helper.initalUsers[0].username, password: helper.initalUsers[0].password })
+
+      const invalidToken = `${userLogged.token}1`
+
+      const result = await api
+        .post('/api/blogs')
+        .set('Authorization', `bearer ${invalidToken}`)
+        .send(newBlog)
+        .expect(401)
+        .expect('Content-Type', /application\/json/)
+
+      expect(result.body.error).toContain('token missing or invalid')
+
+      const blogsAtEnd = await helper.blogsInDb()
+      expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+
+      const titles = blogsAtEnd.map(blog => blog.title)
+      expect(titles).not.toContain('The Next Mission')
     })
   })
 })
@@ -141,8 +239,13 @@ describe('deletion of a blog', () => {
     const blogsAtStart = await helper.blogsInDb()
     const blogToDelete = blogsAtStart[0]
 
+    const { body: userLogged } = await api
+      .post('/api/login')
+      .send({ username: helper.initalUsers[0].username, password: helper.initalUsers[0].password })
+
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', `bearer ${userLogged.token}`)
       .expect(204)
 
     const blogsAtEnd = await helper.blogsInDb()
@@ -157,17 +260,72 @@ describe('deletion of a blog', () => {
 
     console.log(validNonexistingId)
 
+    const { body: userLogged } = await api
+      .post('/api/login')
+      .send({ username: helper.initalUsers[0].username, password: helper.initalUsers[0].password })
+
     await api
       .delete(`/api/blogs/${validNonexistingId}`)
+      .set('Authorization', `bearer ${userLogged.token}`)
       .expect(404)
   })
 
   test('fails with statuscode 400 malformatted id', async () => {
     const invalidId = 'a123pi9'
 
-    await api
+    const { body: userLogged } = await api
+      .post('/api/login')
+      .send({ username: helper.initalUsers[0].username, password: helper.initalUsers[0].password })
+
+    const result = await api
       .delete(`/api/blogs/${invalidId}`)
+      .set('Authorization', `bearer ${userLogged.token}`)
       .expect(400)
+
+    expect(result.body.error).toContain('malformatted id')
+  })
+  describe('fails if token missing or invalid', () => {
+    test('missing token', async () => {
+      const blogsAtStart = await helper.blogsInDb()
+      const blogToDelete = blogsAtStart[0]
+
+      const result = await api
+        .delete(`/api/blogs/${blogToDelete.id}`)
+        .expect(401)
+        .expect('Content-Type', /application\/json/)
+
+      expect(result.body.error).toContain('token missing - Unauthorized')
+
+      const blogsAtEnd = await helper.blogsInDb()
+      expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+
+      const titles = blogsAtEnd.map(blog => blog.title)
+      expect(titles).toContain('React patterns')
+    })
+    test('invalid token', async () => {
+      const { body: userLogged } = await api
+        .post('/api/login')
+        .send({ username: helper.initalUsers[0].username, password: helper.initalUsers[0].password })
+
+      const invalidToken = `${userLogged.token}1`
+
+      const blogsAtStart = await helper.blogsInDb()
+      const blogToDelete = blogsAtStart[0]
+
+      const result = await api
+        .delete(`/api/blogs/${blogToDelete.id}`)
+        .set('Authorization', `bearer ${invalidToken}`)
+        .expect(401)
+        .expect('Content-Type', /application\/json/)
+
+      expect(result.body.error).toContain('token missing or invalid')
+
+      const blogsAtEnd = await helper.blogsInDb()
+      expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+
+      const titles = blogsAtEnd.map(blog => blog.title)
+      expect(titles).toContain('React patterns')
+    })
   })
 })
 
@@ -188,9 +346,11 @@ describe('viewing a specific blog', () => {
   test('fails with statuscode 400 malformatted id', async () => {
     const invalidId = 'a123pi9'
 
-    await api
+    const result = await api
       .get(`/api/blogs/${invalidId}`)
       .expect(400)
+
+    expect(result.body.error).toContain('malformatted id')
   })
 
   test('fails with statuscode 404 if blog does not exist', async () => {
@@ -198,9 +358,11 @@ describe('viewing a specific blog', () => {
 
     console.log(validNonexistingId)
 
-    await api
+    const result = await api
       .get(`/api/blogs/${validNonexistingId}`)
       .expect(404)
+
+    console.log(result.body)
   })
 })
 
@@ -227,9 +389,11 @@ describe('updating the information of an individual blog post', () => {
 
     const updatedBlog = { ...blogToUpdate, likes: 678 }
 
-    await api.put(`/api/blogs/${invalidId}`)
+    const result = await api.put(`/api/blogs/${invalidId}`)
       .send(updatedBlog)
       .expect(400)
+
+    expect(result.body.error).toContain('malformatted id')
 
     const blogsAtEnd = await helper.blogsInDb()
     const blogToViewAtEnd = blogsAtEnd[0]

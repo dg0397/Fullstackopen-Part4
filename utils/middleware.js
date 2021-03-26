@@ -43,10 +43,10 @@ const tokenExtractor = (request, response, next) => {
   next()
 }
 
-const userExtractor = async (request,response,next) => {
-  //code that extracts the user
+const userExtractor = async (request, response, next) => {
+  // code that extracts the user
   const authorization = request.get('authorization')
-  if(authorization && authorization.toLowerCase().startsWith('bearer ')){
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
     const token = authorization.substring(7)
     const decodedToken = jwt.verify(token, process.env.SECRET)
     if (!token || !decodedToken.id) {
@@ -54,10 +54,11 @@ const userExtractor = async (request,response,next) => {
     }
     const user = await User.findById(decodedToken.id)
     request.user = user
+  } else {
+    return response.status(401).json({ error: 'token missing - Unauthorized' })
   }
   next()
 }
-
 
 module.exports = {
   requestLogger,

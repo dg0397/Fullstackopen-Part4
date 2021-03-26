@@ -43,6 +43,19 @@ const initialBlogs = [
   }
 ]
 
+const initalUsers = [
+  {
+    username: 'dgMaster',
+    name: 'master dg',
+    password: '123456789'
+  },
+  {
+    username: 'rootMaster',
+    name: 'master',
+    password: '123456789'
+  }
+]
+
 const nonExistingId = async () => {
   const blog = new Blog({
     title: 'Go To Statement Considered Harmful',
@@ -67,9 +80,17 @@ const usersInDb = async () => {
   return users.map((user) => user.toJSON())
 }
 
+// const getLoggedUserToken = async () => {
+//  const { body: userLogged } = await api
+//    .post('/api/login')
+//    .send({ username: initalUsers[0].username, password: initalUsers[0].password })
+//
+//  return userLogged.token
+// }
 module.exports = {
   initialBlogs,
   nonExistingId,
   blogsInDb,
-  usersInDb
+  usersInDb,
+  initalUsers
 }
