@@ -23,7 +23,7 @@ usersRouter.post('/', async (request, response) => {
   })
 
   const savedUser = await user.save()
-
+  console.log(savedUser)
   response.json(savedUser)
 })
 

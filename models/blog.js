@@ -20,7 +20,12 @@ const blogSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
-  }
+  },
+  comments: [{
+    type: String,
+    minLength: 3,
+    maxLength: 40
+  }]
 })
 
 blogSchema.set('toJSON', {

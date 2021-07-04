@@ -1,10 +1,11 @@
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
-Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3RNYXN0ZXIiLCJpZCI6IjYwNWI3ZTg1MTdkMmI4MzQ1MDU5MzViYiIsImlhdCI6MTYxNjc3ODk0MiwiZXhwIjoxNjE2NzgyNTQyfQ.7mYiEcRW8ZPymnh1l82PD6taDkS2nv9oGUdEXy-nVuM
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3RNYXN0ZXIiLCJpZCI6IjYwNWI3ZTg1MTdkMmI4MzQ1MDU5MzViYiIsImlhdCI6MTYyNTE3ODM4NCwiZXhwIjoxNjI1MTgxOTg0fQ.FoxYYomPEwscSXaNeYEFI3wi81KFLKQRkYlb8rEXavQ
 
 {
     "title": "Learning React-TypeScript2",
     "author": "master",
     "url": "leartypescript.com",
-    "likes": 200
+    "likes": 200,
+    "comments":["This is a great blog"]
 }
